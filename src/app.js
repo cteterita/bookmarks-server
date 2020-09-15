@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const { NODE_ENV } = require('./config');
 
 const logger = require('./logger');
+const bookmarksRouter = require('./bookmarks/bookmarks-router');
 
 const app = express();
 
@@ -28,6 +29,8 @@ app.use((req, res, next) => {
   // move to the next middleware
   return next();
 });
+
+app.use(bookmarksRouter);
 
 app.get('/', (req, res) => {
   res.send('Hello, world!');
