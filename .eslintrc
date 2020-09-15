@@ -1,0 +1,9 @@
+{
+    "extends": ["airbnb", "airbnb/hooks"],
+    "globals": {
+        "supertest": true,
+        "expect": true,
+        "describe": true,
+        "it": true
+    }
+}
