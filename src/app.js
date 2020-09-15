@@ -5,6 +5,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const { NODE_ENV } = require('./config');
 
+const logger = require('./logger');
+
 const app = express();
 
 const morganOption = (NODE_ENV === 'production')
