@@ -2,8 +2,12 @@
     "extends": ["airbnb", "airbnb/hooks"],
     "globals": {
         "supertest": true,
-        "expect": true,
         "describe": true,
-        "it": true
+        "context": true,
+        "it": true,
+        "before": true,
+        "beforeEach": true,
+        "after": true,
+        "afterEach": true
     }
 }
