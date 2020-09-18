@@ -1,6 +1,7 @@
 const express = require('express');
 const { v4: uuid } = require('uuid');
 const { isWebUri } = require('valid-url'); // Got this idea from the solution
+const xss = require('xss');
 const logger = require('../logger');
 const { dummyBookmarks } = require('../store');
 const bookmarksService = require('./bookmarks-service');
@@ -10,8 +11,8 @@ const bodyParser = express.json();
 
 const formatBookmark = (bookmark) => ({
   id: bookmark.id,
-  title: bookmark.title,
-  description: bookmark.description,
+  title: xss(bookmark.title),
+  description: xss(bookmark.description),
   url: bookmark.url,
   rating: Number(bookmark.rating),
 });
