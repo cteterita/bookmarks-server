@@ -2,14 +2,26 @@ const express = require('express');
 const { v4: uuid } = require('uuid');
 const { isWebUri } = require('valid-url'); // Got this idea from the solution
 const logger = require('../logger');
-const { bookmarks } = require('../store');
+const { dummyBookmarks } = require('../store');
+const bookmarksService = require('./bookmarks-service');
 
 const booksmarkRouter = express.Router();
 const bodyParser = express.json();
 
+const formatBookmark = (bookmark) => ({
+  id: bookmark.id,
+  title: bookmark.title,
+  description: bookmark.description,
+  url: bookmark.url,
+  rating: Number(bookmark.rating),
+});
+
 booksmarkRouter
   .route('/bookmarks')
-  .get((req, res) => res.status(200).json(bookmarks))
+  .get((req, res) => {
+    bookmarksService.getAllBookmarks(req.app.get('db'))
+      .then((bookmarks) => res.status(200).json(bookmarks.map(formatBookmark)));
+  })
   .post(bodyParser, (req, res) => {
     const {
       title,
@@ -42,7 +54,7 @@ booksmarkRouter
     };
 
     logger.info(`Bookmark with id ${id} created`);
-    bookmarks.push(newBookmark);
+    dummyBookmarks.push(newBookmark);
     return res.status(201).json(newBookmark);
   });
 
@@ -50,25 +62,27 @@ booksmarkRouter
   .route('/bookmarks/:id')
   .get((req, res) => {
     const { id } = req.params;
-    const bookmark = bookmarks.find((b) => b.id === id);
-    if (!bookmark) {
-      logger.error(`Bookmark with id ${id} not found.`);
-      return res
-        .status(404)
-        .send('Bookmark not found.');
-    }
-    return res.json(bookmark);
+    bookmarksService.getById(req.app.get('db'), id)
+      .then((bookmark) => {
+        if (!bookmark) {
+          logger.error(`Bookmark with id ${id} not found.`);
+          return res
+            .status(404)
+            .send('Bookmark not found.');
+        }
+        return res.json(formatBookmark(bookmark));
+      });
   })
   .delete((req, res) => {
     const { id } = req.params;
-    const bookmarkIndex = bookmarks.find((b) => b.id === id);
+    const bookmarkIndex = dummyBookmarks.find((b) => b.id === id);
     if (bookmarkIndex === -1) {
       logger.error(`Bookmark with id ${id} not found.`);
       return res
         .status(404)
         .send('Bookmark not found.');
     }
-    bookmarks.splice(bookmarkIndex, 1);
+    dummyBookmarks.splice(bookmarkIndex, 1);
     logger.info(`Bookmark with id ${id} deleted.`);
     return res.status(204).end();
   });
