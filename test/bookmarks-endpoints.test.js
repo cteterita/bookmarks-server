@@ -56,5 +56,53 @@ describe('Bookmarks Endpoints', () => {
         .set(authHeader)
         .expect(404, 'Bookmark not found.');
     });
+
+    describe('POST /bookmarks', () => {
+      it('successfully adds a valid bookmark', () => {
+        const newBookmarkData = {
+          title: 'Apple',
+          url: 'http://www.apple.com',
+          description: 'They make computers',
+          rating: 4,
+        };
+        return supertest(app)
+          .post('/bookmarks')
+          .send(newBookmarkData)
+          .set(authHeader)
+          .expect(201)
+          .expect((res) => {
+            expect(res.body.title).to.eql(newBookmarkData.title);
+            expect(res.body.url).to.eql(newBookmarkData.url);
+            expect(res.body.description).to.eql(newBookmarkData.description);
+            expect(res.body.rating).to.eql(newBookmarkData.rating);
+          })
+          .then((postRes) => supertest(app).get(postRes.headers.location).set(authHeader).expect(postRes.body));
+      });
+      it('rejects a bookmark without a title', () => {
+        const missingTitleData = {
+          url: 'http://www.apple.com',
+          description: 'They make computers',
+          rating: 4,
+        };
+        return supertest(app)
+          .post('/bookmarks')
+          .send(missingTitleData)
+          .set(authHeader)
+          .expect(400, 'Invalid data: missing field');
+      });
+      it('rejects a bookmark with an invalid rating', () => {
+        const invalidBookmarkData = {
+          title: 'Apple',
+          url: 'http://www.apple.com',
+          description: 'They make computers',
+          rating: 10,
+        };
+        return supertest(app)
+          .post('/bookmarks')
+          .send(invalidBookmarkData)
+          .set(authHeader)
+          .expect(400, 'Invalid data: rating must be between 1 and 5');
+      });
+    });
   });
 });

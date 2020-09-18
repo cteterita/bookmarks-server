@@ -1,5 +1,4 @@
 const express = require('express');
-const { v4: uuid } = require('uuid');
 const { isWebUri } = require('valid-url'); // Got this idea from the solution
 const xss = require('xss');
 const logger = require('../logger');
@@ -23,7 +22,7 @@ booksmarkRouter
     bookmarksService.getAllBookmarks(req.app.get('db'))
       .then((bookmarks) => res.status(200).json(bookmarks.map(formatBookmark)));
   })
-  .post(bodyParser, (req, res) => {
+  .post(bodyParser, (req, res, next) => {
     const {
       title,
       url,
@@ -45,18 +44,24 @@ booksmarkRouter
       return res.status(400).send('Invalid data: url must be a valid web url');
     }
 
-    const id = uuid();
     const newBookmark = {
-      id,
       title,
       url,
       description,
       rating,
     };
 
-    logger.info(`Bookmark with id ${id} created`);
-    dummyBookmarks.push(newBookmark);
-    return res.status(201).json(newBookmark);
+    bookmarksService.insertBookmark(req.app.get('db'), newBookmark)
+      .then((bookmark) => {
+        logger.info(`Bookmark with id ${bookmark.id} created`);
+        newBookmark.id = bookmark.id;
+        return res
+          .status(201)
+          .location(`/bookmarks/${bookmark.id}`)
+          .json(formatBookmark(newBookmark));
+      })
+      .catch(next);
+    return res.status(400);
   });
 
 booksmarkRouter
