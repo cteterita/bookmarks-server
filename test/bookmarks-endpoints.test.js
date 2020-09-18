@@ -1,3 +1,4 @@
+const { expect } = require('chai');
 const knex = require('knex');
 const app = require('../src/app');
 
@@ -76,7 +77,10 @@ describe('Bookmarks Endpoints', () => {
             expect(res.body.description).to.eql(newBookmarkData.description);
             expect(res.body.rating).to.eql(newBookmarkData.rating);
           })
-          .then((postRes) => supertest(app).get(postRes.headers.location).set(authHeader).expect(postRes.body));
+          .then((postRes) => supertest(app)
+            .get(postRes.headers.location)
+            .set(authHeader)
+            .expect(postRes.body));
       });
       it('rejects a bookmark without a title', () => {
         const missingTitleData = {
