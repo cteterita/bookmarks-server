@@ -2,7 +2,6 @@ const express = require('express');
 const { isWebUri } = require('valid-url'); // Got this idea from the solution
 const xss = require('xss');
 const logger = require('../logger');
-const { dummyBookmarks } = require('../store');
 const bookmarksService = require('./bookmarks-service');
 
 const booksmarkRouter = express.Router();
@@ -79,18 +78,14 @@ booksmarkRouter
         return res.json(formatBookmark(bookmark));
       });
   })
-  .delete((req, res) => {
+  .delete((req, res, next) => {
     const { id } = req.params;
-    const bookmarkIndex = dummyBookmarks.find((b) => b.id === id);
-    if (bookmarkIndex === -1) {
-      logger.error(`Bookmark with id ${id} not found.`);
-      return res
-        .status(404)
-        .send('Bookmark not found.');
-    }
-    dummyBookmarks.splice(bookmarkIndex, 1);
-    logger.info(`Bookmark with id ${id} deleted.`);
-    return res.status(204).end();
+    bookmarksService.deleteBookmark(req.app.get('db'), id)
+      .then(() => {
+        logger.info(`Bookmark ${id} deleted.`);
+        res.status(204).end();
+      })
+      .catch(next);
   });
 
 module.exports = booksmarkRouter;
