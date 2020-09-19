@@ -12,7 +12,7 @@ const formatBookmark = (bookmark) => ({
   title: xss(bookmark.title),
   description: xss(bookmark.description),
   url: bookmark.url,
-  rating: Number(bookmark.rating),
+  rating: bookmark.rating,
 });
 
 booksmarkRouter
@@ -33,7 +33,7 @@ booksmarkRouter
       return res.status(400).send('Invalid data: missing field');
     }
 
-    if (![1, 2, 3, 4, 5].includes(rating)) {
+    if (!['1', '2', '3', '4', '5'].includes(rating)) {
       logger.error(`POST /bookmarks failed due to invalid rating ${rating}`);
       return res.status(400).send('Invalid data: rating must be between 1 and 5');
     }

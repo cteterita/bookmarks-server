@@ -64,7 +64,7 @@ describe('Bookmarks Endpoints', () => {
           title: 'Apple',
           url: 'http://www.apple.com',
           description: 'They make computers',
-          rating: 4,
+          rating: '4',
         };
         return supertest(app)
           .post('/bookmarks')
@@ -86,7 +86,7 @@ describe('Bookmarks Endpoints', () => {
         const missingTitleData = {
           url: 'http://www.apple.com',
           description: 'They make computers',
-          rating: 4,
+          rating: '4',
         };
         return supertest(app)
           .post('/bookmarks')
@@ -99,7 +99,7 @@ describe('Bookmarks Endpoints', () => {
           title: 'Apple',
           url: 'http://www.apple.com',
           description: 'They make computers',
-          rating: 10,
+          rating: '10',
         };
         return supertest(app)
           .post('/bookmarks')
