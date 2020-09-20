@@ -65,7 +65,7 @@ booksmarkRouter
 
 booksmarkRouter
   .route('/bookmarks/:id')
-  .get((req, res) => {
+  .all((req, res, next) => {
     const { id } = req.params;
     bookmarksService.getById(req.app.get('db'), id)
       .then((bookmark) => {
@@ -75,8 +75,13 @@ booksmarkRouter
             .status(404)
             .send('Bookmark not found.');
         }
-        return res.json(formatBookmark(bookmark));
-      });
+        res.bookmark = bookmark;
+        next();
+      })
+      .catch(next);
+  })
+  .get((req, res) => {
+    res.json(formatBookmark(res.bookmark));
   })
   .delete((req, res, next) => {
     const { id } = req.params;
@@ -84,6 +89,32 @@ booksmarkRouter
       .then(() => {
         logger.info(`Bookmark ${id} deleted.`);
         res.status(204).end();
+      })
+      .catch(next);
+  })
+  .patch(bodyParser, (req, res, next) => {
+    const { id } = req.params;
+    const {
+      title,
+      url,
+      description,
+      rating,
+    } = req.body;
+
+    if (!title && !url && !description && !rating) {
+      return res.status(400).send('Must update one of title, url, description, or rating.');
+    }
+    const newBookmarkData = {
+      title,
+      url,
+      description,
+      rating,
+    };
+
+    bookmarksService.updateBookmark(req.app.get('db'), id, newBookmarkData)
+      .then(() => {
+        logger.info(`Bookmark ${id} updated: ${newBookmarkData}`);
+        return res.status(204).end();
       })
       .catch(next);
   });

@@ -1,5 +1,7 @@
 const { expect } = require('chai');
+const { json } = require('express');
 const knex = require('knex');
+const supertest = require('supertest');
 const app = require('../src/app');
 
 const { makeBookmarksArray } = require('./bookmarks.fixtures');
@@ -39,6 +41,38 @@ describe('Bookmarks Endpoints', () => {
         .get(`/bookmarks/${id}`)
         .set(authHeader)
         .expect(200, testBookmarks[id - 1]);
+    });
+
+    describe.only('PATCH /bookmarks/:id', () => {
+      it('requires one of the four update fields', () => {
+        const id = 3;
+        return supertest(app)
+          .patch(`/bookmarks/${id}`)
+          .send({ location: 'whatever' })
+          .set(authHeader)
+          .expect(400, 'Must update one of title, url, description, or rating.');
+      });
+      it('updates a bookmark successfully', () => {
+        const id = 3;
+        const existingBookmark = testBookmarks[id - 1];
+        const newBookmarkData = {
+          title: 'PATCH',
+        };
+        const expectedBookmark = {
+          ...existingBookmark,
+          ...newBookmarkData,
+        };
+
+        return supertest(app)
+          .patch(`/bookmarks/${id}`)
+          .send(newBookmarkData)
+          .set(authHeader)
+          .expect(204)
+          .then(() => supertest(app)
+            .get(`/bookmarks/${id}`)
+            .set(authHeader)
+            .expect(expectedBookmark));
+      });
     });
   });
 
